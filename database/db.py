@@ -1,5 +1,5 @@
 import sqlite3
-from werkzeug.security import generate_password_hash  # type: ignore[import-not-found]
+from werkzeug.security import generate_password_hash  
 
 DB_PATH = "spendly.db"
 
@@ -45,45 +45,15 @@ def init_db():
         """)
         conn.commit()
 
-def seed_db():
+def create_user(name, email, password_hash):
     """
-    Inserts demo data if the users table is empty.
-    Prevents duplicate inserts on repeated runs.
+    Creates a new user in the users table.
+    Returns the ID of the new user.
     """
     with get_db() as conn:
-        # Check if users table already contains data
-        user = conn.execute("SELECT id FROM users LIMIT 1").fetchone()
-        if user:
-            return
-
-        # Insert demo user
-        demo_user_data = {
-            "name": "Demo User",
-            "email": "demo@spendly.com",
-            "password_hash": generate_password_hash("demo123", method='pbkdf2:sha256')
-        }
-
         cursor = conn.execute(
             "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
-            (demo_user_data["name"], demo_user_data["email"], demo_user_data["password_hash"])
-        )
-        user_id = cursor.lastrowid
-
-        # Define sample expenses covering all categories
-        categories = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
-        sample_expenses = [
-            (user_id, 12.50, "Food", "2026-09-25", "Lunch at Cafe"),
-            (user_id, 45.00, "Transport", "2026-09-26", "Gas refill"),
-            (user_id, 120.00, "Bills", "2026-09-27", "Internet bill"),
-            (user_id, 30.00, "Health", "2026-09-28", "Pharmacy"),
-            (user_id, 15.00, "Entertainment", "2026-09-29", "Movie ticket"),
-            (user_id, 65.20, "Shopping", "2026-09-30", "New shirt"),
-            (user_id, 10.00, "Other", "2026-10-01", "Misc"),
-            (user_id, 22.00, "Food", "2026-10-01", "Dinner"),
-        ]
-
-        conn.executemany(
-            "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
-            sample_expenses
+            (name, email, password_hash)
         )
         conn.commit()
+        return cursor.lastrowid
