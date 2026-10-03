@@ -57,3 +57,15 @@ def create_user(name, email, password_hash):
         )
         conn.commit()
         return cursor.lastrowid
+
+def get_user_by_email(email):
+    """
+    Fetches a user from the users table by their email.
+    Returns the user row if found, otherwise None.
+    """
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM users WHERE email = ?",
+            (email,)
+        ).fetchone()
+
