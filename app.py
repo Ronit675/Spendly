@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import init_db, get_db, create_user, get_user_by_email
+from database.db import init_db, get_db, create_user, get_user_by_email, get_user_profile, get_user_stats, get_user_transactions, get_category_breakdown
 import sqlite3
 
 app = Flask(__name__)
@@ -101,32 +101,11 @@ def profile():
         flash("Please log in to access your profile.", "error")
         return redirect(url_for("login"))
 
-    # Hardcoded data for UI validation (Step 4)
-    user_data = {
-        "name": session.get("user_name", "Alex Rivera"),
-        "email": "alex@example.com",
-        "member_since": "January 2024",
-        "initials": "AR"
-    }
-
-    stats = {
-        "total_spent": "₹42,500",
-        "transaction_count": 128,
-        "top_category": "Dining"
-    }
-
-    transactions = [
-        {"date": "Oct 02, 2026", "description": "Starbucks Coffee", "category": "Dining", "amount": "-₹350"},
-        {"date": "Oct 01, 2026", "description": "Uber Ride", "category": "Transport", "amount": "-₹1,200"},
-        {"date": "Sep 30, 2026", "description": "Amazon Electronics", "category": "Shopping", "amount": "-₹5,400"},
-        {"date": "Sep 28, 2026", "description": "Grocery Store", "category": "Food", "amount": "-₹2,100"},
-    ]
-
-    categories = [
-        {"name": "Dining", "amount": "₹12,000", "percentage": 35},
-        {"name": "Transport", "amount": "₹8,500", "percentage": 20},
-        {"name": "Shopping", "amount": "₹15,000", "percentage": 45},
-    ]
+    uid = session["user_id"]
+    user_data = get_user_profile(uid)
+    stats = get_user_stats(uid)
+    transactions = get_user_transactions(uid)
+    categories = get_category_breakdown(uid)
 
     return render_template(
         "profile.html",
